@@ -10,7 +10,7 @@ const WIDTH: usize = 200;
 const HEIGHT: usize = 200;
 
 fn main() {
-    let c = 15.0; // speed of light in m/s
+    let c = 100.0; // speed of light in m/s
 
     let (tx, rx) = std::sync::mpsc::channel::<Acceleration>();
     std::thread::spawn(move || {
@@ -34,7 +34,7 @@ fn main() {
     window.limit_update_rate(Some(std::time::Duration::from_secs_f32(1.0 / 40.0)));
     let mut plot_data: Vec<u8> = Vec::new();
     let mut velocity = Vec3::ZERO;
-
+    let mut peak_lorentz = 1.0;
     while window.is_open() && !window.is_key_down(Key::Escape) {
         if let Ok(v) = rx.try_recv() {
             velocity = vec3(v.x, v.y, v.z);
@@ -43,13 +43,18 @@ fn main() {
             plot_data.push(0);
         }
         let lorentz_factor = 1.0 / (1.0 - (velocity.length() / c).powf(2.0)).sqrt();
+        if lorentz_factor > peak_lorentz {
+            peak_lorentz = lorentz_factor;
+        }
         buffer.fill(0);
         draw_text(
             &mut buffer,
             &format!(
-                "v={:.2}m/s\nlorentz = {:.2}",
+                "v={:.2}m/s\nlorentz = {:.2}\n1/lorentz = {:.2}\npeak lorentz = {:.2}",
                 velocity.length(),
-                lorentz_factor
+                lorentz_factor,
+                lorentz_factor.recip(),
+                peak_lorentz
             ),
             (4, 4),
             0xffffffff,

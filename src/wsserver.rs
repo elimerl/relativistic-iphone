@@ -11,6 +11,8 @@ pub struct Acceleration {
     pub z: f32,
 }
 
+// ITS GOOD I SWEAR
+
 pub fn server(channel: mpsc::Sender<Acceleration>) {
     let server = Server::bind("127.0.0.1:3005").unwrap();
 
